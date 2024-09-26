@@ -1,0 +1,34 @@
+﻿services:
+  dotnet_postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: PostgresDb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - dotnet_network
+  
+  testworkquestions.api:
+    image: testworkquestions.api
+    build:
+      context: .
+      dockerfile: TestWorkQuestions.API/Dockerfile
+    depends_on:
+      - dotnet_postgres
+    environment:
+      ASPNETCORE_URLS: "http://*:80"
+      ConnectionStrings__PostgresSQL: Host=dotnet_postgres;Port=5432;Database=PostgresDb;Username=postgres;Password=root
+    ports:
+      - "9000:80"
+    networks:
+      - dotnet_network
+      
+volumes:
+  postgres_data:
+    
+networks:
+  dotnet_network:
